@@ -1,0 +1,162 @@
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '../api/client';
+import type { ApiResponse, WatchlistItem } from '../types';
+import { Plus, Trash2, RefreshCw } from 'lucide-react';
+
+export default function Watchlist() {
+  const queryClient = useQueryClient();
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['watchlist'],
+    queryFn: () => api.get<ApiResponse<WatchlistItem[]>>('/watchlist'),
+    refetchInterval: 60000,
+  });
+
+  const items = data?.data ?? [];
+
+  // Search items to add
+  const handleSearch = async () => {
+    if (!searchQuery) return;
+    const res = await api.get<ApiResponse<any[]>>(`/items/search?q=${encodeURIComponent(searchQuery)}&limit=10`);
+    setSearchResults(res.data ?? []);
+  };
+
+  const addMutation = useMutation({
+    mutationFn: (item: any) => api.post('/watchlist', {
+      good_id: String(item.good_id),
+      market_hash_name: item.market_hash_name,
+      item_name: item.name,
+      image_url: item.image_url,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['watchlist'] });
+      setShowAddModal(false);
+      setSearchQuery('');
+      setSearchResults([]);
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (goodId: string) => api.delete(`/watchlist/${goodId}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['watchlist'] }),
+  });
+
+  const refreshMutation = useMutation({
+    mutationFn: () => api.post('/watchlist/refresh'),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['watchlist'] }),
+  });
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">关注列表</h1>
+        <div className="flex gap-2">
+          <button onClick={() => refreshMutation.mutate()} className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm hover:opacity-80" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <RefreshCw size={14} /> 刷新
+          </button>
+          <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium hover:opacity-80" style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}>
+            <Plus size={14} /> 添加
+          </button>
+        </div>
+      </div>
+
+      {/* Grid */}
+      {isLoading ? (
+        <p style={{ color: 'var(--text-muted)' }}>加载中...</p>
+      ) : items.length === 0 ? (
+        <div className="text-center py-20">
+          <p style={{ color: 'var(--text-muted)' }} className="mb-2">还没有关注任何饰品</p>
+          <button onClick={() => setShowAddModal(true)} className="font-medium" style={{ color: 'var(--accent-green)' }}>
+            添加第一个关注
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="rounded-lg p-4 relative group cursor-pointer hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: 'var(--bg-card)' }}
+              onClick={() => window.location.href = `/items/${item.good_id}`}
+            >
+              <div className="flex items-center gap-3">
+                {item.image_url && (
+                  <img src={item.image_url} alt={item.item_name ?? ''} className="w-14 h-14 object-contain rounded" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{item.item_name || item.market_hash_name}</p>
+                  <p className="text-lg font-bold mt-1">
+                    ¥{item.last_price?.toFixed(2) ?? 'N/A'}
+                  </p>
+                  {item.change_pct_24h != null && (
+                    <span className={`text-xs ${item.change_pct_24h >= 0 ? 'price-up' : 'price-down'}`}>
+                      {item.change_pct_24h >= 0 ? '+' : ''}{item.change_pct_24h}%
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* Remove button */}
+              <button
+                onClick={(e) => { e.stopPropagation(); removeMutation.mutate(item.good_id); }}
+                className="absolute top-2 right-2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-opacity-50"
+                style={{ backgroundColor: 'var(--bg-hover)' }}
+              >
+                <Trash2 size={14} style={{ color: 'var(--accent-red)' }} />
+              </button>
+              {/* Tags */}
+              {item.tags.length > 0 && (
+                <div className="flex gap-1 mt-2 flex-wrap">
+                  {item.tags.map((tag) => (
+                    <span key={tag} className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--accent-blue)' }}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} onClick={() => setShowAddModal(false)}>
+          <div className="w-full max-w-md rounded-xl p-6" style={{ backgroundColor: 'var(--bg-secondary)' }} onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-bold mb-4">添加关注</h2>
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="搜索饰品..."
+                className="flex-1 px-3 py-2 rounded-lg text-sm outline-none border"
+                style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              />
+              <button onClick={handleSearch} className="px-4 py-2 rounded-lg text-sm" style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}>
+                搜索
+              </button>
+            </div>
+            <div className="max-h-60 overflow-y-auto space-y-1">
+              {searchResults.map((r) => (
+                <div
+                  key={r.good_id}
+                  onClick={() => addMutation.mutate(r)}
+                  className="flex items-center gap-2 p-2 rounded cursor-pointer hover:opacity-80"
+                  style={{ backgroundColor: 'var(--bg-card)' }}
+                >
+                  {r.image_url && <img src={r.image_url} alt="" className="w-8 h-8 object-contain rounded" />}
+                  <span className="text-sm truncate">{r.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
