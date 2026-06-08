@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
+import { useNavigate } from 'react-router-dom';
 import type { ApiResponse, WatchlistItem } from '../types';
 import { Plus, Trash2, RefreshCw } from 'lucide-react';
 
 export default function Watchlist() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -55,10 +57,16 @@ export default function Watchlist() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">关注列表</h1>
         <div className="flex gap-2">
-          <button onClick={() => refreshMutation.mutate()} className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm hover:opacity-80" style={{ backgroundColor: 'var(--bg-card)' }}>
+          <button
+            onClick={() => refreshMutation.mutate()}
+            className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm bg-card hover:bg-hover transition-all duration-200"
+          >
             <RefreshCw size={14} /> 刷新
           </button>
-          <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium hover:opacity-80" style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-brand text-black hover:opacity-90 transition-all duration-200"
+          >
             <Plus size={14} /> 添加
           </button>
         </div>
@@ -66,11 +74,11 @@ export default function Watchlist() {
 
       {/* Grid */}
       {isLoading ? (
-        <p style={{ color: 'var(--text-muted)' }}>加载中...</p>
+        <p className="text-muted-text">加载中...</p>
       ) : items.length === 0 ? (
         <div className="text-center py-20">
-          <p style={{ color: 'var(--text-muted)' }} className="mb-2">还没有关注任何饰品</p>
-          <button onClick={() => setShowAddModal(true)} className="font-medium" style={{ color: 'var(--accent-green)' }}>
+          <p className="text-muted-text mb-2">还没有关注任何饰品</p>
+          <button onClick={() => setShowAddModal(true)} className="font-medium text-brand hover:opacity-80 transition-opacity">
             添加第一个关注
           </button>
         </div>
@@ -79,9 +87,8 @@ export default function Watchlist() {
           {items.map((item) => (
             <div
               key={item.id}
-              className="rounded-lg p-4 relative group cursor-pointer hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: 'var(--bg-card)' }}
-              onClick={() => window.location.href = `/items/${item.good_id}`}
+              className="rounded-lg p-4 bg-card relative group cursor-pointer hover:bg-hover transition-all duration-200"
+              onClick={() => navigate(`/items/${item.good_id}`)}
             >
               <div className="flex items-center gap-3">
                 {item.image_url && (
@@ -102,16 +109,16 @@ export default function Watchlist() {
               {/* Remove button */}
               <button
                 onClick={(e) => { e.stopPropagation(); removeMutation.mutate(item.good_id); }}
-                className="absolute top-2 right-2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-opacity-50"
-                style={{ backgroundColor: 'var(--bg-hover)' }}
+                className="absolute top-2 right-2 p-1.5 rounded bg-hover opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-danger/20"
+                aria-label="删除关注"
               >
-                <Trash2 size={14} style={{ color: 'var(--accent-red)' }} />
+                <Trash2 size={14} className="text-danger" />
               </button>
               {/* Tags */}
               {item.tags.length > 0 && (
                 <div className="flex gap-1 mt-2 flex-wrap">
                   {item.tags.map((tag) => (
-                    <span key={tag} className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--accent-blue)' }}>
+                    <span key={tag} className="px-2 py-0.5 rounded text-xs bg-hover text-info">
                       {tag}
                     </span>
                   ))}
@@ -124,8 +131,8 @@ export default function Watchlist() {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} onClick={() => setShowAddModal(false)}>
-          <div className="w-full max-w-md rounded-xl p-6" style={{ backgroundColor: 'var(--bg-secondary)' }} onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowAddModal(false)}>
+          <div className="w-full max-w-md rounded-xl p-6 bg-secondary shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">添加关注</h2>
             <div className="flex gap-2 mb-4">
               <input
@@ -134,10 +141,9 @@ export default function Watchlist() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="搜索饰品..."
-                className="flex-1 px-3 py-2 rounded-lg text-sm outline-none border"
-                style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="flex-1 px-3 py-2 rounded-lg text-sm outline-none border border-border bg-card text-text placeholder-muted-text focus:border-brand focus:ring-1 focus:ring-brand transition-all duration-200"
               />
-              <button onClick={handleSearch} className="px-4 py-2 rounded-lg text-sm" style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}>
+              <button onClick={handleSearch} className="px-4 py-2 rounded-lg text-sm bg-brand text-black hover:opacity-90 transition-all duration-200">
                 搜索
               </button>
             </div>
@@ -146,8 +152,7 @@ export default function Watchlist() {
                 <div
                   key={r.good_id}
                   onClick={() => addMutation.mutate(r)}
-                  className="flex items-center gap-2 p-2 rounded cursor-pointer hover:opacity-80"
-                  style={{ backgroundColor: 'var(--bg-card)' }}
+                  className="flex items-center gap-2 p-2 rounded bg-card cursor-pointer hover:bg-hover transition-all duration-200"
                 >
                   {r.image_url && <img src={r.image_url} alt="" className="w-8 h-8 object-contain rounded" />}
                   <span className="text-sm truncate">{r.name}</span>

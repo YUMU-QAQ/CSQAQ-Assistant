@@ -49,13 +49,12 @@ export default function Dashboard() {
           {overview?.hot_items?.slice(0, 8).map((item) => (
             <div
               key={item.good_id}
-              className="rounded-lg p-3 cursor-pointer hover:opacity-80 transition-opacity"
-              style={{ backgroundColor: 'var(--bg-card)' }}
+              className="rounded-lg p-3 bg-card cursor-pointer hover:bg-hover transition-all duration-200"
             >
               {item.image_url && (
                 <img src={item.image_url} alt={item.name} className="w-full h-24 object-contain mb-2" loading="lazy" />
               )}
-              <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{item.name}</p>
+              <p className="text-xs truncate text-secondary-text">{item.name}</p>
               <p className="text-sm font-medium">¥{item.price?.toFixed(2) ?? 'N/A'}</p>
               {item.change_pct != null && (
                 <span className={`text-xs ${item.change_pct >= 0 ? 'price-up' : 'price-down'}`}>
@@ -82,8 +81,8 @@ function StatCard({ title, value, change, suffix = '' }: {
   title: string; value?: number | null; change?: number | null; suffix?: string;
 }) {
   return (
-    <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--bg-card)' }}>
-      <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>{title}</p>
+    <div className="rounded-xl p-5 bg-card">
+      <p className="text-sm mb-1 text-secondary-text">{title}</p>
       <p className="text-2xl font-bold">
         {value != null ? `${value.toLocaleString()}${suffix}` : 'N/A'}
       </p>
@@ -107,11 +106,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function RankingTable({ title, items, color }: { title: string; items: any[]; color: string }) {
   return (
-    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)' }}>
+    <div className="rounded-xl p-4 bg-card">
       <h2 className="text-lg font-semibold mb-3">{title}</h2>
       <table className="w-full text-sm">
         <thead>
-          <tr style={{ color: 'var(--text-muted)' }}>
+          <tr className="text-muted-text">
             <th className="text-left pb-2">#</th>
             <th className="text-left pb-2">名称</th>
             <th className="text-right pb-2">价格</th>
@@ -120,8 +119,8 @@ function RankingTable({ title, items, color }: { title: string; items: any[]; co
         </thead>
         <tbody>
           {items.map((item: any, idx: number) => (
-            <tr key={item.good_id ?? idx} className="border-t" style={{ borderColor: 'var(--border-color)' }}>
-              <td className="py-2" style={{ color: 'var(--text-muted)' }}>{idx + 1}</td>
+            <tr key={item.good_id ?? idx} className="border-t border-border">
+              <td className="py-2 text-muted-text">{idx + 1}</td>
               <td className="py-2 truncate max-w-[120px]">{item.name ?? 'N/A'}</td>
               <td className="py-2 text-right">¥{item.price?.toFixed(2) ?? 'N/A'}</td>
               <td className={`py-2 text-right ${color}`}>
@@ -138,10 +137,10 @@ function RankingTable({ title, items, color }: { title: string; items: any[]; co
 function DashboardSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="h-8 w-32 rounded mb-6" style={{ backgroundColor: 'var(--bg-card)' }} />
+      <div className="h-8 w-32 rounded mb-6 bg-card" />
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-24 rounded-xl" style={{ backgroundColor: 'var(--bg-card)' }} />
+          <div key={i} className="h-24 rounded-xl bg-card" />
         ))}
       </div>
     </div>

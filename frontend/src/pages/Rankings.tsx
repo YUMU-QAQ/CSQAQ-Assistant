@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
+import { useNavigate } from 'react-router-dom';
 import type { ApiResponse } from '../types';
 
 const FILTERS = [
@@ -15,6 +16,7 @@ const FILTERS = [
 export default function Rankings() {
   const [filter, setFilter] = useState('gainers');
   const [page, setPage] = useState(1);
+  const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['rankings', filter, page],
@@ -36,11 +38,11 @@ export default function Rankings() {
           <button
             key={key}
             onClick={() => { setFilter(key); setPage(1); }}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            style={{
-              backgroundColor: filter === key ? 'var(--accent-green)' : 'var(--bg-card)',
-              color: filter === key ? '#000' : 'var(--text-secondary)',
-            }}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              filter === key
+                ? 'bg-brand text-black'
+                : 'bg-card text-secondary-text hover:bg-hover'
+            }`}
           >
             {label}
           </button>
@@ -48,10 +50,10 @@ export default function Rankings() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
+      <div className="rounded-xl overflow-hidden bg-card">
         <table className="w-full text-sm">
           <thead>
-            <tr style={{ backgroundColor: 'var(--bg-hover)' }}>
+            <tr className="bg-hover">
               <th className="text-left py-3 px-4">#</th>
               <th className="text-left py-3 px-4">名称</th>
               <th className="text-right py-3 px-4">价格</th>
@@ -61,15 +63,17 @@ export default function Rankings() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={5} className="text-center py-8" style={{ color: 'var(--text-muted)' }}>加载中...</td></tr>
+              <tr><td colSpan={5} className="text-center py-8 text-muted-text">加载中...</td></tr>
             ) : itemsList.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-8" style={{ color: 'var(--text-muted)' }}>暂无数据</td></tr>
+              <tr><td colSpan={5} className="text-center py-8 text-muted-text">暂无数据</td></tr>
             ) : (
               itemsList.map((item: any, idx: number) => (
-                <tr key={item.good_id ?? idx} className="border-t hover:bg-opacity-50 cursor-pointer"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onClick={() => window.location.href = `/items/${item.good_id}`}>
-                  <td className="py-3 px-4" style={{ color: 'var(--text-muted)' }}>{(page - 1) * 50 + idx + 1}</td>
+                <tr
+                  key={item.good_id ?? idx}
+                  className="border-t border-border hover:bg-hover cursor-pointer transition-colors duration-150"
+                  onClick={() => navigate(`/items/${item.good_id}`)}
+                >
+                  <td className="py-3 px-4 text-muted-text">{(page - 1) * 50 + idx + 1}</td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       {item.image_url && <img src={item.image_url} alt="" className="w-8 h-8 object-contain rounded" />}
@@ -80,7 +84,7 @@ export default function Rankings() {
                   <td className={`text-right py-3 px-4 ${item.change_pct >= 0 ? 'price-up' : 'price-down'}`}>
                     {item.change_pct != null ? `${item.change_pct >= 0 ? '+' : ''}${item.change_pct}%` : 'N/A'}
                   </td>
-                  <td className="text-right py-3 px-4 hidden md:table-cell" style={{ color: 'var(--text-secondary)' }}>
+                  <td className="text-right py-3 px-4 hidden md:table-cell text-secondary-text">
                     {item.volume?.toLocaleString() ?? 'N/A'}
                   </td>
                 </tr>
@@ -95,16 +99,14 @@ export default function Rankings() {
         <button
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={page === 1}
-          className="px-4 py-2 rounded-lg text-sm disabled:opacity-30"
-          style={{ backgroundColor: 'var(--bg-card)' }}
+          className="px-4 py-2 rounded-lg text-sm bg-card disabled:opacity-30 hover:bg-hover transition-all duration-200"
         >
           上一页
         </button>
-        <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>第 {page} 页</span>
+        <span className="text-sm text-secondary-text">第 {page} 页</span>
         <button
           onClick={() => setPage((p) => p + 1)}
-          className="px-4 py-2 rounded-lg text-sm"
-          style={{ backgroundColor: 'var(--bg-card)' }}
+          className="px-4 py-2 rounded-lg text-sm bg-card hover:bg-hover transition-all duration-200"
         >
           下一页
         </button>

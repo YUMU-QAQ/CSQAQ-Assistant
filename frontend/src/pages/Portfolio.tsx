@@ -55,7 +55,7 @@ export default function Portfolio() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">持仓管理</h1>
-        <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium hover:opacity-80" style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}>
+        <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-brand text-black hover:opacity-90 transition-all duration-200">
           <Plus size={14} /> 添加持仓
         </button>
       </div>
@@ -65,14 +65,14 @@ export default function Portfolio() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <StatCard label="总成本" value={`¥${s.total_cost?.toLocaleString()}`} />
           <StatCard label="当前市值" value={s.total_value ? `¥${s.total_value.toLocaleString()}` : 'N/A'} />
-          <StatCard label="总盈亏" value={s.total_pnl != null ? `¥${s.total_pnl.toLocaleString()}` : 'N/A'} color={s.total_pnl != null ? (s.total_pnl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)') : undefined} />
-          <StatCard label="盈亏率" value={s.total_pnl_pct != null ? `${s.total_pnl_pct}%` : 'N/A'} color={s.total_pnl_pct != null ? (s.total_pnl_pct >= 0 ? 'var(--accent-green)' : 'var(--accent-red)') : undefined} />
+          <StatCard label="总盈亏" value={s.total_pnl != null ? `¥${s.total_pnl.toLocaleString()}` : 'N/A'} color={s.total_pnl != null ? (s.total_pnl >= 0 ? 'text-brand' : 'text-danger') : undefined} />
+          <StatCard label="盈亏率" value={s.total_pnl_pct != null ? `${s.total_pnl_pct}%` : 'N/A'} color={s.total_pnl_pct != null ? (s.total_pnl_pct >= 0 ? 'text-brand' : 'text-danger') : undefined} />
         </div>
       )}
 
       {/* Diversification Pie */}
       {Object.keys(div).length > 0 && (
-        <div className="rounded-xl p-4 mb-6" style={{ backgroundColor: 'var(--bg-card)' }}>
+        <div className="rounded-xl p-4 mb-6 bg-card">
           <h2 className="text-lg font-semibold mb-3">持仓分布</h2>
           <ReactECharts option={pieOption} style={{ height: 300 }} />
         </div>
@@ -80,19 +80,19 @@ export default function Portfolio() {
 
       {/* Holdings Table */}
       {isLoading ? (
-        <p style={{ color: 'var(--text-muted)' }}>加载中...</p>
+        <p className="text-muted-text">加载中...</p>
       ) : items.length === 0 ? (
         <div className="text-center py-20">
-          <p style={{ color: 'var(--text-muted)' }}>还没有持仓记录</p>
-          <button onClick={() => setShowAddModal(true)} className="font-medium mt-2" style={{ color: 'var(--accent-green)' }}>
+          <p className="text-muted-text">还没有持仓记录</p>
+          <button onClick={() => setShowAddModal(true)} className="font-medium mt-2 text-brand hover:opacity-80 transition-opacity">
             添加第一笔持仓
           </button>
         </div>
       ) : (
-        <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
+        <div className="rounded-xl overflow-hidden bg-card">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ backgroundColor: 'var(--bg-hover)' }}>
+              <tr className="bg-hover">
                 <th className="text-left py-3 px-4">名称</th>
                 <th className="text-right py-3 px-4">数量</th>
                 <th className="text-right py-3 px-4 hidden md:table-cell">买入价</th>
@@ -103,7 +103,7 @@ export default function Portfolio() {
             </thead>
             <tbody>
               {items.map((h) => (
-                <tr key={h.id} className="border-t" style={{ borderColor: 'var(--border-color)' }}>
+                <tr key={h.id} className="border-t border-border hover:bg-hover transition-colors duration-150">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       {h.image_url && <img src={h.image_url} alt="" className="w-8 h-8 object-contain rounded" />}
@@ -117,8 +117,12 @@ export default function Portfolio() {
                     {h.pnl != null ? `¥${h.pnl.toFixed(2)}` : 'N/A'}
                   </td>
                   <td className="py-3 px-4">
-                    <button onClick={() => removeMutation.mutate(h.id)} className="p-1 rounded hover:opacity-50">
-                      <Trash2 size={14} style={{ color: 'var(--accent-red)' }} />
+                    <button
+                      onClick={() => removeMutation.mutate(h.id)}
+                      className="p-1.5 rounded hover:bg-danger/20 transition-colors duration-200"
+                      aria-label="删除持仓"
+                    >
+                      <Trash2 size={14} className="text-danger" />
                     </button>
                   </td>
                 </tr>
@@ -130,17 +134,17 @@ export default function Portfolio() {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} onClick={() => setShowAddModal(false)}>
-          <div className="w-full max-w-lg rounded-xl p-6 space-y-4" style={{ backgroundColor: 'var(--bg-secondary)' }} onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowAddModal(false)}>
+          <div className="w-full max-w-lg rounded-xl p-6 space-y-4 bg-secondary shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold">添加持仓</h2>
-            <input type="text" placeholder="饰品 market_hash_name" value={form.market_hash_name} onChange={(e) => setForm({...form, market_hash_name: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-            <input type="text" placeholder="good_id" value={form.good_id} onChange={(e) => setForm({...form, good_id: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
+            <input type="text" placeholder="饰品 market_hash_name" value={form.market_hash_name} onChange={(e) => setForm({...form, market_hash_name: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm border border-border bg-card text-text placeholder-muted-text focus:border-brand focus:ring-1 focus:ring-brand transition-all duration-200 outline-none" />
+            <input type="text" placeholder="good_id" value={form.good_id} onChange={(e) => setForm({...form, good_id: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm border border-border bg-card text-text placeholder-muted-text focus:border-brand focus:ring-1 focus:ring-brand transition-all duration-200 outline-none" />
             <div className="grid grid-cols-2 gap-3">
-              <input type="number" placeholder="数量" value={form.quantity} onChange={(e) => setForm({...form, quantity: +e.target.value})} className="px-3 py-2 rounded-lg text-sm border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-              <input type="number" placeholder="买入单价 (¥)" value={form.purchase_price || ''} onChange={(e) => setForm({...form, purchase_price: +e.target.value})} className="px-3 py-2 rounded-lg text-sm border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
+              <input type="number" placeholder="数量" value={form.quantity} onChange={(e) => setForm({...form, quantity: +e.target.value})} className="px-3 py-2 rounded-lg text-sm border border-border bg-card text-text placeholder-muted-text focus:border-brand focus:ring-1 focus:ring-brand transition-all duration-200 outline-none" />
+              <input type="number" placeholder="买入单价 (¥)" value={form.purchase_price || ''} onChange={(e) => setForm({...form, purchase_price: +e.target.value})} className="px-3 py-2 rounded-lg text-sm border border-border bg-card text-text placeholder-muted-text focus:border-brand focus:ring-1 focus:ring-brand transition-all duration-200 outline-none" />
             </div>
-            <input type="text" placeholder="买入日期 (YYYY-MM-DD)" value={form.purchase_date} onChange={(e) => setForm({...form, purchase_date: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-            <button onClick={() => addMutation.mutate()} className="w-full py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}>确认添加</button>
+            <input type="text" placeholder="买入日期 (YYYY-MM-DD)" value={form.purchase_date} onChange={(e) => setForm({...form, purchase_date: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm border border-border bg-card text-text placeholder-muted-text focus:border-brand focus:ring-1 focus:ring-brand transition-all duration-200 outline-none" />
+            <button onClick={() => addMutation.mutate()} className="w-full py-2 rounded-lg text-sm font-medium bg-brand text-black hover:opacity-90 transition-all duration-200">确认添加</button>
           </div>
         </div>
       )}
@@ -150,9 +154,9 @@ export default function Portfolio() {
 
 function StatCard({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)' }}>
-      <p className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>{label}</p>
-      <p className="text-xl font-bold" style={{ color: color ?? 'var(--text-primary)' }}>{value}</p>
+    <div className="rounded-xl p-4 bg-card">
+      <p className="text-xs mb-1 text-secondary-text">{label}</p>
+      <p className={`text-xl font-bold ${color ?? 'text-text'}`}>{value}</p>
     </div>
   );
 }

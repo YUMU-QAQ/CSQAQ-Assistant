@@ -23,11 +23,11 @@ export default function ItemDetail() {
   const item = detailData?.data as Record<string, unknown> | null;
 
   if (isLoading) {
-    return <p style={{ color: 'var(--text-muted)' }}>加载中...</p>;
+    return <p className="text-muted-text">加载中...</p>;
   }
 
   if (!item) {
-    return <p style={{ color: 'var(--text-muted)' }}>物品未找到</p>;
+    return <p className="text-muted-text">物品未找到</p>;
   }
 
   // Build chart option
@@ -65,51 +65,50 @@ export default function ItemDetail() {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => navigate('/items')}
-          className="px-3 py-1.5 rounded-lg text-sm cursor-pointer hover:opacity-80"
-          style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)' }}
+          className="px-3 py-1.5 rounded-lg text-sm bg-card text-secondary-text hover:bg-hover transition-all duration-200"
         >
           ← 返回
         </button>
         <div>
           <h1 className="text-2xl font-bold">{item.name as string}</h1>
-          <p style={{ color: 'var(--text-muted)' }}>{item.market_hash_name as string}</p>
+          <p className="text-muted-text">{item.market_hash_name as string}</p>
         </div>
       </div>
 
       {/* Price Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {priceEntries.map(([platform, p]) => (
-          <div key={platform} className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)' }}>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{platform}</p>
+          <div key={platform} className="rounded-xl p-4 bg-card">
+            <p className="text-sm text-secondary-text">{platform}</p>
             <p className="text-2xl font-bold mt-1">¥{p.sell_price?.toFixed(2) ?? 'N/A'}</p>
           </div>
         ))}
       </div>
 
       {/* Price Chart */}
-      <div className="rounded-xl p-4 mb-6" style={{ backgroundColor: 'var(--bg-card)' }}>
+      <div className="rounded-xl p-4 mb-6 bg-card">
         <h2 className="text-lg font-semibold mb-4">价格走势 (30天)</h2>
         {chartPoints.length > 0 ? (
           <ReactECharts option={chartOption} style={{ height: 350 }} />
         ) : (
-          <p style={{ color: 'var(--text-muted)' }}>暂无图表数据</p>
+          <p className="text-muted-text">暂无图表数据</p>
         )}
       </div>
 
       {/* Stats */}
       {(item.circulation != null || item.market_cap != null) && (
-        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)' }}>
+        <div className="rounded-xl p-4 bg-card">
           <h2 className="text-lg font-semibold mb-3">市场数据</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             {item.circulation != null && (
-              <div><span style={{ color: 'var(--text-muted)' }}>存世量: </span>{Number(item.circulation).toLocaleString()}</div>
+              <div><span className="text-muted-text">存世量: </span>{Number(item.circulation).toLocaleString()}</div>
             )}
             {item.market_cap != null && (
-              <div><span style={{ color: 'var(--text-muted)' }}>总市值: </span>¥{Number(item.market_cap).toLocaleString()}</div>
+              <div><span className="text-muted-text">总市值: </span>¥{Number(item.market_cap).toLocaleString()}</div>
             )}
             {item.change_pct_24h != null && (
               <div>
-                <span style={{ color: 'var(--text-muted)' }}>24h涨跌: </span>
+                <span className="text-muted-text">24h涨跌: </span>
                 <span className={Number(item.change_pct_24h) >= 0 ? 'price-up' : 'price-down'}>
                   {Number(item.change_pct_24h) >= 0 ? '+' : ''}{Number(item.change_pct_24h).toFixed(2)}%
                 </span>

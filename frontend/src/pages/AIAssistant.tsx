@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 import type { ApiResponse, Conversation, AIMessage } from '../types';
-import { Plus, Trash2, Send } from 'lucide-react';
+import { Plus, Trash2, Send, Bot } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function AIAssistant() {
@@ -104,48 +104,54 @@ export default function AIAssistant() {
   return (
     <div className="flex h-[calc(100vh-80px)] gap-4">
       {/* Sidebar */}
-      <div className="w-56 flex-shrink-0 flex flex-col rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
-        <div className="p-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
+      <div className="w-56 flex-shrink-0 flex flex-col rounded-xl overflow-hidden bg-card">
+        <div className="p-3 border-b border-border">
           <button
             onClick={() => createConv.mutate()}
-            className="w-full flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium hover:opacity-80"
-            style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}
+            className="w-full flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-brand text-black hover:opacity-90 transition-all duration-200"
           >
             <Plus size={14} /> 新建对话
           </button>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {conversations.map((conv) => (
-            <div
-              key={conv.id}
-              onClick={() => setActiveConv(conv.id)}
-              className="flex items-center justify-between px-3 py-2.5 cursor-pointer hover:opacity-80 text-sm"
-              style={{
-                backgroundColor: conv.id === activeConv ? 'var(--bg-hover)' : 'transparent',
-                color: conv.id === activeConv ? 'var(--text-primary)' : 'var(--text-secondary)',
-              }}
-            >
-              <span className="truncate">{conv.title || 'New Conversation'}</span>
-              <button
-                onClick={(e) => { e.stopPropagation(); deleteConv.mutate(conv.id); }}
-                className="p-1 rounded opacity-0 hover:opacity-100"
-              >
-                <Trash2 size={12} style={{ color: 'var(--accent-red)' }} />
-              </button>
+          {conversations.length === 0 ? (
+            <div className="px-3 py-8 text-center">
+              <p className="text-xs text-muted-text">暂无对话</p>
             </div>
-          ))}
+          ) : (
+            conversations.map((conv) => (
+              <div
+                key={conv.id}
+                onClick={() => setActiveConv(conv.id)}
+                className={`flex items-center justify-between px-3 py-2.5 cursor-pointer text-sm transition-all duration-200 ${
+                  conv.id === activeConv
+                    ? 'bg-hover text-text'
+                    : 'text-secondary-text hover:bg-hover hover:text-text'
+                }`}
+              >
+                <span className="truncate">{conv.title || 'New Conversation'}</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); deleteConv.mutate(conv.id); }}
+                  className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-danger/20 transition-all duration-200"
+                  aria-label="删除对话"
+                >
+                  <Trash2 size={12} className="text-danger" />
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
+      <div className="flex-1 flex flex-col rounded-xl overflow-hidden bg-card">
         {/* Context Toggles */}
-        <div className="flex gap-3 px-4 py-2 border-b" style={{ borderColor: 'var(--border-color)' }}>
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
+        <div className="flex gap-3 px-4 py-2 border-b border-border">
+          <label className="flex items-center gap-1.5 text-xs cursor-pointer text-secondary-text hover:text-text transition-colors">
             <input type="checkbox" checked={showMarket} onChange={(e) => setShowMarket(e.target.checked)} />
             市场数据
           </label>
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
+          <label className="flex items-center gap-1.5 text-xs cursor-pointer text-secondary-text hover:text-text transition-colors">
             <input type="checkbox" checked={showPortfolio} onChange={(e) => setShowPortfolio(e.target.checked)} />
             持仓数据
           </label>
@@ -153,26 +159,59 @@ export default function AIAssistant() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className="max-w-[80%] rounded-xl px-4 py-3 text-sm"
-                style={{
-                  backgroundColor: msg.role === 'user' ? 'var(--accent-green)' : 'var(--bg-hover)',
-                  color: msg.role === 'user' ? '#000' : 'var(--text-primary)',
-                }}
-              >
-                {msg.role === 'assistant' ? (
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
-                ) : (
-                  <p>{msg.content}</p>
-                )}
+          {!activeConv ? (
+            /* Welcome / empty state */
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <Bot size={48} className="text-muted-text mb-4" />
+              <h2 className="text-xl font-semibold mb-2">CSQAQ AI 助手</h2>
+              <p className="text-sm text-secondary-text max-w-md">
+                我可以帮你分析市场行情、评估持仓风险、解答饰品相关问题。
+                点击左侧「新建对话」开始，或直接输入问题。
+              </p>
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                {[
+                  '当前市场行情如何？',
+                  '分析我的持仓风险',
+                  '最近哪些饰品在涨？',
+                  'AK-47 夜愿价格走势',
+                ].map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    onClick={() => { setInput(suggestion); }}
+                    className="px-4 py-2 rounded-lg bg-hover text-secondary-text hover:bg-border hover:text-text transition-all duration-200"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
               </div>
             </div>
-          ))}
+          ) : messages.length === 0 && !isStreaming ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <Bot size={40} className="text-muted-text mb-3" />
+              <p className="text-sm text-secondary-text">开始你的第一个问题</p>
+            </div>
+          ) : (
+            messages.map((msg) => (
+              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`max-w-[80%] rounded-xl px-4 py-3 text-sm ${
+                    msg.role === 'user'
+                      ? 'bg-brand text-black'
+                      : 'bg-hover text-text'
+                  }`}
+                >
+                  {msg.role === 'assistant' ? (
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  ) : (
+                    <p>{msg.content}</p>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
           {isStreaming && streaming && (
             <div className="flex justify-start">
-              <div className="max-w-[80%] rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-primary)' }}>
+              <div className="max-w-[80%] rounded-xl px-4 py-3 text-sm bg-hover text-text">
                 <ReactMarkdown>{streaming}</ReactMarkdown>
               </div>
             </div>
@@ -181,7 +220,7 @@ export default function AIAssistant() {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="p-4 border-t border-border">
           <div className="flex gap-2">
             <input
               type="text"
@@ -190,14 +229,13 @@ export default function AIAssistant() {
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
               placeholder="输入问题，如：分析我的持仓风险..."
               disabled={isStreaming}
-              className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none border"
-              style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none border border-border bg-primary text-text placeholder-muted-text focus:border-brand focus:ring-1 focus:ring-brand transition-all duration-200"
             />
             <button
               onClick={sendMessage}
               disabled={isStreaming || !input.trim()}
-              className="px-4 py-2.5 rounded-xl disabled:opacity-30"
-              style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}
+              className="px-4 py-2.5 rounded-xl disabled:opacity-30 bg-brand text-black hover:opacity-90 transition-all duration-200"
+              aria-label="发送"
             >
               <Send size={16} />
             </button>

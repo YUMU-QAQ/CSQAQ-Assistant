@@ -15,11 +15,11 @@ const navItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 flex flex-col border-r z-40" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+    <aside className="fixed left-0 top-0 h-screen w-56 flex flex-col bg-secondary border-r border-border z-40">
       {/* Logo */}
-      <div className="h-14 flex items-center px-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
-        <span className="text-lg font-bold" style={{ color: 'var(--accent-green)' }}>CSQAQ</span>
-        <span className="text-sm ml-2" style={{ color: 'var(--text-secondary)' }}>Assistant</span>
+      <div className="h-14 flex items-center px-4 border-b border-border">
+        <span className="text-lg font-bold text-brand">CSQAQ</span>
+        <span className="text-sm ml-2 text-secondary-text">Assistant</span>
       </div>
 
       {/* Nav */}
@@ -30,16 +30,12 @@ export default function Sidebar() {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
                 isActive
-                  ? 'font-medium'
-                  : 'hover:bg-opacity-50'
+                  ? 'bg-hover text-text font-medium'
+                  : 'text-secondary-text hover:bg-hover hover:text-text'
               }`
             }
-            style={({ isActive }) => ({
-              backgroundColor: isActive ? 'var(--bg-hover)' : 'transparent',
-              color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-            })}
           >
             <Icon size={18} />
             <span>{label}</span>
