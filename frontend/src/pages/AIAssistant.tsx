@@ -66,7 +66,8 @@ export default function AIAssistant() {
         queryClient.invalidateQueries({ queryKey: ['ai', 'conversations'] });
       }
 
-      const response = await fetch('/api/v1/ai/chat', {
+      const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1';
+      const response = await fetch(`${API_BASE}/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
