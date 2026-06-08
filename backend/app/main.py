@@ -19,6 +19,7 @@ from .routers import (
     arbitrage,
     cases,
     ai,
+    feishu,
 )
 
 
@@ -28,10 +29,27 @@ async def lifespan(app: FastAPI):
     # Startup
     await init_db()
     asyncio.create_task(cache.cleanup_expired())
+    # Start alert checker for Feishu push (every 120 seconds)
+    asyncio.create_task(alert_check_loop())
     yield
     # Shutdown
     from .services.csqaq_client import csqaq_client
     await csqaq_client.close()
+
+
+async def alert_check_loop():
+    """Background task: check alerts and push to Feishu."""
+    from .database import async_session
+    from .services.feishu_service import feishu_pusher
+    await asyncio.sleep(30)  # Wait for startup
+    while True:
+        try:
+            async with async_session() as db:
+                await feishu_pusher.check_and_push_alerts(db)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Alert check error: {e}")
+        await asyncio.sleep(120)  # Every 2 minutes
 
 
 app = FastAPI(
@@ -41,15 +59,21 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — allow frontend dev server
+# CORS — allow frontend (dev + production)
+cors_origins = [settings.frontend_origin]
+# Always allow localhost dev servers
+cors_origins += [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+]
+# Deduplicate
+cors_origins = list(dict.fromkeys(cors_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,6 +89,7 @@ app.include_router(alerts.router)
 app.include_router(arbitrage.router)
 app.include_router(cases.router)
 app.include_router(ai.router)
+app.include_router(feishu.router)
 
 
 @app.get("/api/health")

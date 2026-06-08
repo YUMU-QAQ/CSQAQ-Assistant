@@ -20,6 +20,15 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
 
+    # Frontend origin for CORS (set to Vercel URL in production)
+    frontend_origin: str = "http://localhost:5173"
+
+    # Feishu Bot
+    feishu_app_id: str = ""
+    feishu_app_secret: str = ""
+    feishu_verify_token: str = ""
+    feishu_webhook_url: str = ""  # 群机器人 webhook 地址，用于主动推送
+
     # Rate limiting
     csqaq_rate_limit: float = 1.0  # requests per second
 
